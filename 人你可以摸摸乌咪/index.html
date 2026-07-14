@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>人你可以摸摸乌咪</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- MediaPipe 手势识别库 -->
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+</head>
+<body>
+    <!-- SVG 融合滤镜：这是实现磁流体/液体质感的黑魔法 -->
+    <svg xmlns="http://www.w3.org/2000/svg" version="1.1" style="display:none;">
+        <defs>
+            <filter id="goo">
+                <!-- 🔴 调整模糊半径（原为 8，进一步降低到 6），减弱黏合感，防止叹号断层被黏在一起 -->
+                <feGaussianBlur in="SourceGraphic" stdDeviation="6" result="blur" />
+                <!-- 增加对比度，让模糊的边缘变得锐利且互相黏合 -->
+                <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 20 -9" result="goo" />
+                <!-- 将原图层叠加回去 -->
+                <feComposite in="SourceGraphic" in2="goo" operator="atop"/>
+            </filter>
+        </defs>
+    </svg>
+
+    <!-- ⚙️ 右上角控制面板 -->
+    <div class="control-panel">
+        <button id="toggle-panel" class="toggle-btn">⚙️ 设置</button>
+        <div id="panel-content" class="panel-content collapsed">
+            <div class="control-group">
+                <label for="particleSlider">磁流体量: <span id="particleValue">25</span></label>
+                <input type="range" id="particleSlider" min="5" max="100" value="25" step="1">
+            </div>
+            <div class="control-group" style="margin-top: 15px; text-align: center;">
+                <button id="toggleCameraBtn" class="camera-btn">📷 开启手势互动</button>
+            </div>
+            
+            <hr style="margin: 15px 0; border: none; border-top: 1px dashed #ddd;">
+            
+            <div class="control-group">
+                <label style="text-align: center;">📱 手机/iPad 访问</label>
+                <div id="mobileAccessInfo" style="font-size: 12px; color: #666; text-align: center; margin-top: 5px;">
+                    <!-- 内容由 JS 动态生成 -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 摄像头画面预览 (默认隐藏) -->
+    <video id="inputVideo" class="input-video" autoplay playsinline></video>
+
+    <div class="pet-container">
+        <!-- 提示文字 -->
+        
+
+        <!-- 宠物的整体定位容器 -->
+        <div class="pet-wrapper">
+            <!-- 1. 底层：头部的底图与流体，放在身体下方 -->
+            <div class="tank-layer">
+                <img class="tank-bg" src="头缸底层.png" alt="头缸底图" />
+                <div class="canvas-container">
+                    <canvas id="fluidCanvas"></canvas>
+                </div>
+            </div>
+            
+            <!-- 2. 顶层：外壳和身体，盖在流体上面 -->
+            <img class="body-layer" src="身体.png" alt="身体和外壳" />
+        </div>
+    </div>
+
+    <!-- 虚拟手势光标 -->
+    <div id="handCursor" class="hand-cursor"></div>
+
+    <script src="script.js"></script>
+</body>
+</html>
